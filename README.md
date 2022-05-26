@@ -1,5 +1,5 @@
 # Objectivity_Prediction_Web_App
- A ML web app which detect objectivity of the text and analyzes the sentiment based on the VADER lexicon
+ A ML web app which detect objectivity of the text and analyzes the sentiment based on the VADER lexicon.
 
 I built a classifier model which detects whether a text is subjective or objective, based on the genre-annotated dataset GINCO, machine-translated to English (MT-GINCO).
 

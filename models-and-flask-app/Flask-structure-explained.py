@@ -11,6 +11,9 @@ SVC_model = pickle.load(open('models-and-flask-app/SVC.pkl', 'rb'))
 LR_model = pickle.load(open('models-and-flask-app/LOGISTICREGRESSION.pkl','rb'))
 RandomForest_model = pickle.load(open('models-and-flask-app/RANDOMFORESTCLASSIFIER.pkl','rb'))
 
+# Load the sentiment analysis model
+sa = pickle.load(open("models-and-flask-app/Vader-sentiment.pkl", "rb"))
+
 # Create a TF-IDF representation of the text
 def data_iterator(f):
     for token in f:
@@ -59,11 +62,17 @@ def predict():
     # Predict probabilities
     LR_probabilities = LR_model.predict_proba(d_test)
 
-    RF_prediction = RandomForest_model.predict(d_test)
-    RF_output = RF_prediction[0]
-    RF_probabilities = RandomForest_model.predict_proba(d_test)
+    # If all classifiers agree that the output is positive, print out the sentiment as well.
+    if SVC_output == "subjective" or LR_output == "subjective":
+        sentiment_scores = sa.polarity_scores([predict_text])
+        if sentiment_scores['compound'] >= 0.5:
+            sentiment = "positive"
+        else:
+            sentiment = "negative"
+    else:
+        sentiment = "The text is objective, there is no sentiment"
 
-    return render_template('index.html', prediction_text=Markup(f'The Support Vector Machine model classified this text as: {SVC_output}.<br/>Probabilities for "objective": {round(SVC_probabilities[0][0],2)}, "subjective": {round(SVC_probabilities[0][1],2)}<br/>The Logistic Regression model classified this text as: {LR_output}<br/>Probabilities for "objective": {round(LR_probabilities[0][0],2)}, "subjective": {round(LR_probabilities[0][1],2)}<br/>The Random Forest Classifier classified this text as: {RF_output}<br/>Probabilities for "objective": {round(RF_probabilities[0][0],2)}, "subjective": {round(RF_probabilities[0][1],2)}'))
+    return render_template('index.html', prediction_text=Markup(f'The Support Vector Machine model classified this text as: {SVC_output}.<br/>Probabilities for "objective": {round(SVC_probabilities[0][0],2)}, "subjective": {round(SVC_probabilities[0][1],2)}<br/>The Logistic Regression model classified this text as: {LR_output}<br/>Probabilities for "objective": {round(LR_probabilities[0][0],2)}, "subjective": {round(LR_probabilities[0][1],2)}<br/><br/>The sentiment of the text: {sentiment}.'))
 
 # Note that the render_template method has a new parameter I named prediction_text. This parameter contains a message that will pop up after the user clicks on the predict button. This message is now in the back end. To send it to the front end, add the prediction_text variable inside the <body> of the index.html file.
 
